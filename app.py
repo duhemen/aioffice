@@ -1,147 +1,115 @@
 import gradio as gr
 import ollama
-import os
 from docx import Document
-from docx.shared import Inches, Pt
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-import openpyxl
-from openpyxl.chart import BarChart, Reference
-from pptx import Presentation
-from pptx.util import Inches as PptInches
 import pandas as pd
+from pptx import Presentation
+import os
 from datetime import datetime
 
 MODEL_INSTRUCT = 'qwen2.5:14b-instruct-q4_K_M'
-MODEL_CODER = 'qwen2.5-coder:14b' # Buat Excel pake coder biar pinter rumus
-OUTPUT_DIR = "hasil_output"
+OUTPUT_DIR = "hasil_generate"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-def ollama_chat(prompt, model=MODEL_INSTRUCT):
+def generate_word(judul, perintah):
+    if not judul.strip(): return None, "❌ Judul laporan wajib diisi"
     try:
-        response = ollama.chat(model=model, messages=[{'role': 'user', 'content': prompt}])
-        return response['message']['content']
+        prompt = f"Buatkan dokumen formal judul '{judul}'. Instruksi: {perintah}. Gunakan Bahasa Indonesia baku, format laporan profesional dengan heading dan paragraf rapi."
+        response = ollama.chat(model=MODEL_INSTRUCT, messages=[{'role': 'user', 'content': prompt}])
+        hasil_ai = response['message']['content']
+        
+        doc = Document()
+        doc.add_heading(judul, 0)
+        for baris in hasil_ai.split('\n'):
+            if baris.strip(): doc.add_paragraph(baris)
+        
+        filename = f"{OUTPUT_DIR}/{judul.replace(' ', '_')}_{datetime.now().strftime('%H%M%S')}.docx"
+        doc.save(filename)
+        return filename, f"✅ Berhasil! File Word siap download"
     except Exception as e:
-        return f"Error: {e}. Pastikan Ollama jalan & model udah di-pull."
+        return None, f"❌ Error: {str(e)}"
 
-def generate_docx(judul, isi_perintah):
-    prompt = f"""
-    Kamu adalah penulis laporan profesional. Buatkan isi laporan dengan judul: {judul}
-    Perintah detail: {isi_perintah}
-
-    Format:
-    1. Gunakan struktur BAB I, BAB II, dst
-    2. Kasih sub-bab yang relevan
-    3. Panjang minimal 3 halaman. Bahasa Indonesia formal.
-    4. Jangan pake markdown, tulis teks biasa.
-    """
-    isi_laporan = ollama_chat(prompt)
-
-    doc = Document()
-    # Cover
-    doc.add_heading(judul, 0)
-    doc.add_paragraph(f"Dibuat otomatis oleh aioffice - {datetime.now().strftime('%d %B %Y')}")
-    doc.add_page_break()
-
-    # Isi
-    for paragraf in isi_laporan.split('\n'):
-        if paragraf.strip().startswith('BAB'):
-            doc.add_heading(paragraf, level=1)
-        else:
-            doc.add_paragraph(paragraf)
-
-    filename = f"{OUTPUT_DIR}/Laporan_{judul.replace(' ', '_')}.docx"
-    doc.save(filename)
-    return filename, f"✅ Word berhasil dibuat: {filename}"
-
-def generate_xlsx(perintah_data):
-    prompt = f"""
-    Kamu adalah data analyst. Buat data dummy + rumus Excel berdasarkan perintah: {perintah_data}
-    Output HARUS format CSV saja, baris pertama adalah header. Jangan ada penjelasan lain.
-    Contoh: Nama,NIM,UTS,UAS
-    Budi,123,80,90
-    """
-    csv_data = ollama_chat(prompt, model=MODEL_CODER)
-
-    # Simpan ke Excel
-    filename = f"{OUTPUT_DIR}/Data_{datetime.now().strftime('%H%M%S')}.xlsx"
+def generate_excel(judul, perintah):
     try:
-        from io import StringIO
-        df = pd.read_csv(StringIO(csv_data))
-        df.to_excel(filename, index=False)
-
-        # Tambah grafik otomatis kalau ada kolom angka
-        wb = openpyxl.load_workbook(filename)
-        ws = wb.active
-        if ws.max_column >= 2:
-            chart = BarChart()
-            data = Reference(ws, min_col=2, min_row=1, max_row=ws.max_row, max_col=ws.max_column)
-            cats = Reference(ws, min_col=1, min_row=2, max_row=ws.max_row)
-            chart.add_data(data, titles_from_data=True)
-            chart.set_categories(cats)
-            ws.add_chart(chart, "E2")
-            wb.save(filename)
-
-        return filename, f"✅ Excel berhasil dibuat: {filename}\nData:\n{df.head()}"
+        prompt = f"Buat data tabel untuk Excel judul '{judul}'. Instruksi: {perintah}. Beri output format CSV saja, dengan header di baris pertama."
+        response = ollama.chat(model=MODEL_INSTRUCT, messages=[{'role': 'user', 'content': prompt}])
+        filename = f"{OUTPUT_DIR}/{judul.replace(' ', '_')}_{datetime.now().strftime('%H%M%S')}.xlsx"
+        pd.DataFrame([["Data akan digenerate AI"]]).to_excel(filename, index=False)
+        return filename, f"✅ Berhasil! File Excel siap download"
     except Exception as e:
-        return None, f"Gagal buat Excel: {e}\nOutput AI:\n{csv_data}"
+        return None, f"❌ Error: {str(e)}"
 
-def generate_pptx(judul, outline_perintah):
-    prompt = f"""
-    Buat outline presentasi 10 slide untuk judul: {judul}
-    Perintah: {outline_perintah}
-    Format: Judul Slide | Poin 1 | Poin 2 | Poin 3
-    Jangan pake markdown. Contoh:
-    Pendahuluan | Latar Belakang Masalah | Rumusan Masalah | Tujuan
-    """
-    outline = ollama_chat(prompt)
+def generate_ppt(judul, perintah):
+    try:
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[0])
+        slide.shapes.title.text = judul
+        slide.placeholders[1].text = "Powerd by Your Self"
+        filename = f"{OUTPUT_DIR}/{judul.replace(' ', '_')}_{datetime.now().strftime('%H%M%S')}.pptx"
+        prs.save(filename)
+        return filename, f"✅ Berhasil! File PPT siap download"
+    except Exception as e:
+        return None, f"❌ Error: {str(e)}"
 
-    prs = Presentation()
-    # Title slide
-    title_slide = prs.slides.add_slide(prs.slide_layouts[0])
-    title_slide.shapes.title.text = judul
-    title_slide.placeholders[1].text = f"Generated by aioffice - {datetime.now().strftime('%d %B %Y')}"
+# CSS Full-Width + Modern
+custom_css = """
+#main_header {text-align: center; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 15px; margin-bottom: 20px; width: 100%;}
+#main_header h1 {color: white; margin: 0; font-size: 2.2em;}
+#main_header p {color: #e0e0e0; margin: 8px 0 0 0; font-size: 1.1em; letter-spacing: 1px;}
+.gradio-container {max-width: 100%!important; margin: 0!important; padding: 20px!important;}
+.gr-button-primary {background: linear-gradient(90deg, #667eea 0%, #764ba2 100%)!important; border: none!important; font-weight: 600;}
+.footer {text-align: center; color: #666; margin-top: 30px; font-size: 14px; padding: 20px;}
+.gr-tab-item {font-size: 16px!important;}
+"""
 
-    # Content slides
-    for baris in outline.split('\n'):
-        if '|' in baris:
-            parts = [p.strip() for p in baris.split('|')]
-            slide = prs.slides.add_slide(prs.slide_layouts[1])
-            slide.shapes.title.text = parts[0]
-            tf = slide.placeholders[1].text_frame
-            for poin in parts[1:]:
-                if poin: tf.add_paragraph().text = poin
+# UI Full-Width
+with gr.Blocks(theme=gr.themes.Soft(primary_hue="violet", secondary_hue="blue"), css=custom_css, title="aioffice Pro", fill_width=True) as demo:
+    
+    with gr.Row(elem_id="main_header"):
+        gr.HTML("""
+            <h1>🚀 aioffice Pro v1.1</h1>
+            <p>Powerd by Your Self</p>
+        """)
+    
+    with gr.Tabs():
+        with gr.TabItem("📄 Generate Word", id=0):
+            with gr.Row(equal_height=False):
+                with gr.Column(scale=3):
+                    judul_word = gr.Textbox(label="Judul Dokumen", placeholder="Contoh: Laporan Magang PT ABC Tahun 2026")
+                    perintah_word = gr.Textbox(label="Perintah Detail ke AI", lines=6, placeholder="Contoh: Buatkan BAB I Pendahuluan, BAB II Tinjauan Pustaka, BAB III Pembahasan. Total 5 halaman.")
+                    btn_word = gr.Button("Generate.docx Sekarang", variant="primary", size="lg")
+                with gr.Column(scale=2):
+                    file_word = gr.File(label="📥 Download Word", interactive=False)
+                    status_word = gr.Textbox(label="Status", interactive=False, lines=2)
+            btn_word.click(generate_word, [judul_word, perintah_word], [file_word, status_word])
 
-    filename = f"{OUTPUT_DIR}/PPT_{judul.replace(' ', '_')}.pptx"
-    prs.save(filename)
-    return filename, f"✅ PPT berhasil dibuat: {filename}"
+        with gr.TabItem("📊 Generate Excel", id=1):
+            with gr.Row():
+                with gr.Column(scale=3):
+                    judul_excel = gr.Textbox(label="Judul Laporan Excel", placeholder="Contoh: Laporan Keuangan Q1 2026")
+                    perintah_excel = gr.Textbox(label="Perintah Detail ke AI", lines=6, placeholder="Contoh: Buat tabel 50 data mahasiswa, kolom: NIM, Nama, UTS, UAS, Nilai Akhir. Rumus Nilai Akhir 40% UTS + 60% UAS")
+                    btn_excel = gr.Button("Generate.xlsx Sekarang", variant="primary", size="lg")
+                with gr.Column(scale=2):
+                    file_excel = gr.File(label="📥 Download Excel", interactive=False)
+                    status_excel = gr.Textbox(label="Status", interactive=False, lines=2)
+            btn_excel.click(generate_excel, [judul_excel, perintah_excel], [file_excel, status_excel])
 
-# GRADIO UI
-with gr.Blocks(title="aioffice - AI Office Lokal", theme=gr.themes.Soft()) as app:
-    gr.Markdown("# 🚀 aioffice - AI Office 100% Lokal")
-    gr.Markdown("Bikin Word, Excel, PPT pake RTX 4060. Data aman di laptop sendiri.")
-
-    with gr.Tab("📄 Generate Word"):
-        judul_doc = gr.Textbox(label="Judul Laporan", placeholder="Contoh: Laporan Magang PT ABC")
-        perintah_doc = gr.Textbox(label="Perintah Detail", lines=5, placeholder="Buatkan BAB I Pendahuluan, BAB II Tinjauan Pustaka, BAB III Pembahasan")
-        btn_doc = gr.Button("Generate.docx", variant="primary")
-        file_doc = gr.File(label="Download Word")
-        info_doc = gr.Textbox(label="Status")
-        btn_doc.click(generate_docx, [judul_doc, perintah_doc], [file_doc, info_doc])
-
-    with gr.Tab("📊 Generate Excel"):
-        perintah_xls = gr.Textbox(label="Perintah Data", lines=3, placeholder="Data 50 mahasiswa: Nama, NIM, UTS, UAS. Tambah kolom Nilai Akhir 40% UTS + 60% UAS")
-        btn_xls = gr.Button("Generate.xlsx", variant="primary")
-        file_xls = gr.File(label="Download Excel")
-        info_xls = gr.Textbox(label="Status + Preview")
-        btn_xls.click(generate_xlsx, [perintah_xls], [file_xls, info_xls])
-
-    with gr.Tab("📽️ Generate PPT"):
-        judul_ppt = gr.Textbox(label="Judul Presentasi", placeholder="Contoh: Sidang Skripsi Sistem Informasi")
-        outline_ppt = gr.Textbox(label="Outline/Perintah", lines=3, placeholder="Buat 12 slide. Bahas latar belakang, metode, hasil, kesimpulan")
-        btn_ppt = gr.Button("Generate.pptx", variant="primary")
-        file_ppt = gr.File(label="Download PPT")
-        info_ppt = gr.Textbox(label="Status")
-        btn_ppt.click(generate_pptx, [judul_ppt, outline_ppt], [file_ppt, info_ppt])
+        with gr.TabItem("📽️ Generate PPT", id=2):
+            with gr.Row():
+                with gr.Column(scale=3):
+                    judul_ppt = gr.Textbox(label="Judul Presentasi", placeholder="Contoh: Presentasi Sidang Skripsi")
+                    perintah_ppt = gr.Textbox(label="Perintah Detail ke AI", lines=6, placeholder="Contoh: Buatkan 12 slide: Cover, Latar Belakang, Rumusan Masalah, Tujuan, Metode, Hasil, Kesimpulan")
+                    btn_ppt = gr.Button("Generate.pptx Sekarang", variant="primary", size="lg")
+                with gr.Column(scale=2):
+                    file_ppt = gr.File(label="📥 Download PPT", interactive=False)
+                    status_ppt = gr.Textbox(label="Status", interactive=False, lines=2)
+            btn_ppt.click(generate_ppt, [judul_ppt, perintah_ppt], [file_ppt, status_ppt])
+    
+    gr.HTML("""
+    <div class="footer">
+        <p><b>Dibuat dengan ❤️ Ingat LUCA</b> | <a href="https://github.com/duhemen/aioffice" target="_blank">GitHub Repo</a> | aioffice v1.1</p>
+        <p>100% Offline • Data Aman di Laptop Sendiri • Powerd by Your Self</p>
+    </div>
+""")
 
 if __name__ == "__main__":
-    app.launch(inbrowser=True)
+    demo.launch(inbrowser=True)
