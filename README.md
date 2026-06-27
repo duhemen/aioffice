@@ -90,11 +90,11 @@ python app.py
 Buka http://localhost:7860 di browser. Selesai.
 
 # 📸 Demo Screenshot
-<<<<<<< HEAD
+
 ![UI aioffice Pro v1.1](screenshot.png)
 
 Tampilan UI aioffice Pro v1.1
->>>>>>> 56813fdc8594a76d6b93b595ffb61872e27337b1
+
 
 # ⚙️ Teknologi
 Dibangun dengan ❤️ menggunakan:
