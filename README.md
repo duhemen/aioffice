@@ -67,7 +67,7 @@ Upload jurnal PDF 100 halaman → Tanya `Apa kesimpulan penelitian ini?` → Dij
 
 ---
 
-## 🛠️ Instalasi 5 Menit
+# 🛠️ Instalasi 5 Menit
 **Syarat:** Windows + NVIDIA RTX 4060 / 8GB VRAM ke atas + Python 3.10+
 
 **1. Install Ollama & Download Model**
