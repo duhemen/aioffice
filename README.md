@@ -11,7 +11,7 @@
 [![GPU](https://img.shields.io/badge/GPU-RTX%204060-green)](https://nvidia.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
- [Fitur](#-fitur-utama) • [Install](#-instalasi-5-menit) • [Demo](#-demo-screenshot) • [FAQ](#-faq)
+ [Fitur](#-fitur-utama) • [Install](#%EF%B8%8F-instalasi-5-menit) • [Demo](#-demo-screenshot) • [FAQ](#-faq)
 
 </div>
 
