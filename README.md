@@ -11,7 +11,7 @@
 [![GPU](https://img.shields.io/badge/GPU-RTX%204060-green)](https://nvidia.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[Install](#-instalasi-5-menit) • [Fitur](#-fitur-utama) • [Demo](#-demo-screenshot) • [FAQ](#-faq)
+ [Fitur](#-fitur-utama) • [Install](#%EF%B8%8F-instalasi-5-menit) • [Demo](#-demo-screenshot) • [FAQ](#-faq)
 
 </div>
 
@@ -68,7 +68,6 @@ Upload jurnal PDF 100 halaman → Tanya `Apa kesimpulan penelitian ini?` → Dij
 ---
 
 ## 🛠️ Instalasi 5 Menit
-
 **Syarat:** Windows + NVIDIA RTX 4060 / 8GB VRAM ke atas + Python 3.10+
 
 **1. Install Ollama & Download Model**
@@ -91,9 +90,9 @@ python app.py
 Buka http://localhost:7860 di browser. Selesai.
 
 # 📸 Demo Screenshot
-Segera ditambahkan setelah v1.0 rilis
+![UI aioffice Pro v1.1](screenshot.png)
 
-Contoh hasil Generate Word → Laporan 5 halaman jadi dalam 20 detik.
+Tampilan UI aioffice Pro v1.1
 
 # ⚙️ Teknologi
 Dibangun dengan ❤️ menggunakan:
