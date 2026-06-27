@@ -75,3 +75,51 @@ Upload jurnal PDF 100 halaman → Tanya `Apa kesimpulan penelitian ini?` → Dij
 ```bash
 # Download Ollama di: https://ollama.com
 ollama pull qwen2.5:14b-instruct-q4_K_M
+```
+
+**2. Clone Repo & Install
+```Bash
+# git clone https://github.com/duhemen/aioffice.git
+cd aioffice
+pip install -r requirements.txt
+```
+
+**3. Jalankan!
+```Bash
+python app.py
+```
+Buka http://localhost:7860 di browser. Selesai.
+
+# 📸 Demo Screenshot
+Segera ditambahkan setelah v1.0 rilis
+
+Contoh hasil Generate Word → Laporan 5 halaman jadi dalam 20 detik.
+
+# ⚙️ Teknologi
+Dibangun dengan ❤️ menggunakan:
+
+Ollama - Menjalankan LLM lokal
+Qwen 2.5 14B - Otak AI by Alibaba Cloud, jago Bahasa Indonesia
+Gradio - UI Web yang cantik & gampang
+python-docx, openpyxl, python-pptx - Jembatan ke Microsoft Office
+# 🤔 FAQ
+Q: Wajib RTX 4060?
+A: Nggak. RTX 3060 12GB / RTX 4050 6GB juga jalan, cuma lebih lambat. Minimal 8GB VRAM.
+
+Q: Bisa pake CPU doang?
+A: Bisa tapi LEMOT banget. 1 halaman Word bisa 5 menit. Sangat disarankan pake GPU NVIDIA.
+
+Q: Data aku aman?
+A: 100% aman. Semua proses di localhost. Cek pake Wireshark, nggak ada paket data keluar.
+
+Q: Beda sama LM Studio?
+A: aioffice fokus ke output .docx/.xlsx/.pptx siap pakai. LM Studio cuma chat doang.
+
+# 🗺️ Roadmap v2.0
+ Support Bahasa Daerah: Jawa, Sunda
+ Template Surat Resmi & Skripsi UB/ITB/ITS
+ Fitur OCR: Scan gambar jadi tabel Excel
+ Mode Suara: Bicara → Jadi PPT
+# 📄 Lisensi & Kontribusi
+Proyek ini berlisensi MIT License - Bebas pake, modif, jual lagi.
+Punya ide fitur? Bug? Bikin aja Issues di tab atas. Mau bantu koding? Pull Request welcome banget!
