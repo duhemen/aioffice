@@ -1,0 +1,11 @@
+models:
+  word:
+    name: "qwen2.5:14b-instruct-q4_K_M"
+    role: "Menteri Surat"
+  excel:
+    name: "deepseek-coder-v2:16b-lite-instruct-q4_K_M"
+    role: "Menteri Data"
+  ppt:
+    name: "mistral-nemo:12b"
+    role: "Menteri Presentasi"
+    system_prompt: "Jawab selalu dalam Bahasa Indonesia formal."
