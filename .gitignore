@@ -1,8 +1,20 @@
+# Python
 __pycache__/
 *.pyc
 venv/
-hasil_output/
-*.docx
+.env
+
+# ChromaDB
+chroma_db/
+
+# Output
+output/
 *.xlsx
+*.docx
 *.pptx
-*.pdf
+
+# Logs
+*.log
+
+# OS
+.DS_Store
